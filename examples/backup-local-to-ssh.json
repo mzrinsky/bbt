@@ -1,0 +1,31 @@
+{
+  "backupDest": "ssh://remote-backup-user@remote-backup-host.localdomain/path/to/system-backups/",
+  "destSshOpts": [
+    "-i", "/root/.ssh/id_ed25519-remote-backup-user"
+  ],
+  "archiveBaseName": "system-backup",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "",
+  "archivePermissions": "640",
+  "archiveKeepDays": 30,
+  "backupSrc": "",
+  "srcSshOpts": [],
+  "resources": [
+    "/home/myuser/Documents",
+    "/home/myuser/Pictures",
+    "/home/myuser/src",
+    "/home/myuser/.config/kitty",
+    "/home/myuser/.config/fish",
+    "/home/myuser/.config/nvim/init.vim",
+    "/home/myuser/.ssh",
+    "/etc/systemd/network",
+    "/etc/ntp.conf",
+    "/etc/fstab"
+  ],
+  "excludes": [
+    "*/node_modules",
+    "/home/myuser/src/Custom/",
+    "/home/myuser/src/LargeProject/datafiles"
+  ]
+}

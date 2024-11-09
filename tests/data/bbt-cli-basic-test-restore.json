@@ -1,0 +1,8 @@
+{
+  "restoreSrc": "test-restore-src",
+  "srcSshOpts": ["-test-src-opts"],
+  "restoreDest": "test-restore-dest",
+  "destSshOpts": ["-test-src-opts"],
+  "restoreResources": ["test-resource-1", "test-resource-2"],
+  "excludes": ["test-exclude-1", "test-exclude-2"]
+}

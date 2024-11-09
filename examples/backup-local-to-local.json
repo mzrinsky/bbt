@@ -1,0 +1,19 @@
+
+{
+  "backupDest": "/backups/bbt/test-host/system-backups/",
+  "destSshOpts": [],
+  "archiveBaseName": "system-backup",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "root:remote-backup",
+  "archivePermissions": "640",
+  "archiveKeepDays": 30,
+  "backupSrc": "",
+  "srcSshOpts": [],
+  "resources": [
+    "/etc/ntp.conf",
+    "/etc/network/interfaces"
+  ],
+  "excludes": [
+  ]
+}
