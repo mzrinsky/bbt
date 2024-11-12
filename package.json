@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "jest"
+    "test": "jest && bats tests/"
   },
   "dependencies": {
     "commander": "^12.0.0",

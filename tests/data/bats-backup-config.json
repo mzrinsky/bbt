@@ -1,0 +1,14 @@
+{
+  "backupDest": "./tests/output/backups/",
+  "destSshOpts": [],
+  "archiveBaseName": "test-archive-basename",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "",
+  "archivePermissions": "644",
+  "archiveKeepDays": 30,
+  "backupSrc": "./tests/data/input/",
+  "srcSshOpts": [],
+  "resources": ["test-folder-1", "test-folder-3", "test-file-1"],
+  "excludes": ["test-folder-2", "test-file-2"]
+}

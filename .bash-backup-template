@@ -32,7 +32,9 @@ ch_archive_owner="{{!archive_owner}}"
 ch_archive_perms="{{!archive_perms}}"
 archive_keep_days={{!archive_keep_days}}
 quiet=false
-script_signature="{{!script_signature}}"
+max_arg_len=`getconf ARG_MAX`
+
+printf "Max arg length is ${max_arg_len}\n"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -231,12 +233,6 @@ if [[ "$quiet" != true ]]; then
   printf "$0 run started.\nStart Time: ${start_time}\n"
 fi
 
-# this is dumb, and we should just generate the uuid at the time we process the template.
-sig_uuid=`uuidgen -s -n '@x500' -N "${script_signature}"`
-if [[ "$quiet" != true ]]; then
-  printf "Script uuid: ${sig_uuid}\n"
-fi
-
 archive_datetime=`date "+%F-%H_%M_%S"`
 archive_filename="${archive_basename}-${archive_datetime}.tar.gz"
 
@@ -338,7 +334,6 @@ else
 fi
 
 if [[ "$quiet" != true ]]; then
-  echo "Script Signature: ${script_signature}"
   sys_str=`uname -a`
   finish_time=`date`
   printf "System: ${sys_str}\nFinished Run: ${finish_time}\n"

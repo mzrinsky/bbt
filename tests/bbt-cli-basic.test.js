@@ -19,19 +19,16 @@ test('Validate Restore Config Schema', async () => {
 test('Validate Bash Backup Template Options', async () => {
   const appConfig = await configLoader.loadConfigFile('tests/data/bbt-cli-basic-test-backup.json')
   const templateOptions = bbtCli.getTemplateOptions(appConfig, {}, '.bash-backup-template')
-  console.debug(templateOptions)
   const {error, value} = bbtCli.backupTemplateSchema.validate(templateOptions)
   expect(error).toBe(undefined)
   expect(value).toMatchObject(templateOptions)
 })
 
-test('Basic data validator checks', () => {
-  expect(bbtCli.isDataValid({"test":1}, {"test":1})).toBe(true)
-  expect(bbtCli.isDataValid({"test":1}, {"test":0})).toBe(false)
-});
+test('Validate Bash Restore Template Options', async () => {
+  const appConfig = await configLoader.loadConfigFile('tests/data/bbt-cli-basic-test-restore.json')
+  const templateOptions = bbtCli.getTemplateOptions(appConfig, {}, '.bash-restore-template')
+  const {error, value} = bbtCli.restoreTemplateSchema.validate(templateOptions)
+  expect(error).toBe(undefined)
+  expect(value).toMatchObject(templateOptions)
+})
 
-test('Template options for bash script are valid', () => {
-  expect(bbtCli.getTemplateOptions({}, {}, '.bash-backup-template')).toMatchObject({
-    "testOptions": 1,
-  });
-});

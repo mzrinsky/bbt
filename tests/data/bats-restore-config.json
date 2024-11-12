@@ -1,0 +1,8 @@
+{
+  "restoreSrc": "./tests/output/backups/latest",
+  "srcSshOpts": [],
+  "restoreDest": "./tests/output/restore/",
+  "destSshOpts": [],
+  "restoreResources": ["test-resource-1", "test-resource-2"],
+  "excludes": ["test-exclude-1", "test-exclude-2"]
+}

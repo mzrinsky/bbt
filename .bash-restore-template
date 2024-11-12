@@ -6,7 +6,7 @@
 
 # TODO: Before Release..
 # cleanup comments..
-# remove script signature..
+# remove script signature.. - done
 # fix argument length issue same as backup script.
 
 # the resources that should be restored from the snapshot
@@ -24,7 +24,6 @@ restore_dest="{{!restore_dest}}"
 restore_src_ssh_opts="{{!restore_src_ssh_opts}}"
 restore_dest_ssh_opts="{{!restore_dest_ssh_opts}}"
 quiet=false
-script_signature="{{!script_signature}}"
 
 
 while [ $# -gt 0 ]; do
@@ -207,7 +206,6 @@ function try_restore() {
 try_restore
 
 if [[ "$quiet" != true ]]; then
-  echo "Script Signature: ${script_signature}"
   sys_str=`uname -a`
   finish_time=`date`
   printf "System: ${sys_str}\nFinished Run: ${finish_time}\n"
