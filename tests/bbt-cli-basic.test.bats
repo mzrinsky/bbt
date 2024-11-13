@@ -9,6 +9,15 @@ setup_file() {
     rm -r tests/output/*
   fi
 
+  if [ ! -d "tests/output/backups/" ]; then
+    mkdir -p "tests/output/backups/"
+  fi
+
+  if [ "$(ls -A tests/output/backups/)" ]; then
+    rm -r tests/output/backups/*
+  fi
+
+
 	echo '# setup complete' >&3
 }
 
@@ -44,8 +53,6 @@ main_gen_restore() {
 
 	[ "${status}" -eq 0 ]
   [ -f "./tests/output/test-backup-script" ]
-	# check for backup script on disk..
-	# run it
 }
 
 @test "Generate a bash restore script" {
@@ -54,6 +61,5 @@ main_gen_restore() {
 
 	[ "${status}" -eq 0 ]
   [ -f "./tests/output/test-restore-script" ]
-
 }
 

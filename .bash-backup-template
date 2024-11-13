@@ -319,7 +319,7 @@ else
     backup_dest_archive_path="${backup_dest%/}/${archive_filename}"
     set -ex
     # backup local source to local dest
-    tar -c -C / ${exclude_resource_str}${backup_resource_str}\
+    tar -c -C ${backup_src} ${exclude_resource_str}${backup_resource_str}\
     | {{!archive_command}}\
     | cat > ${backup_dest_archive_path}
     set +ex
