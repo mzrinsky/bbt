@@ -3,6 +3,12 @@
   "srcSshOpts": [],
   "restoreDest": "./tests/output/restore/",
   "destSshOpts": [],
-  "restoreResources": ["test-resource-1", "test-resource-2"],
-  "excludes": ["test-exclude-1", "test-exclude-2"]
+  "restoreResources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3"
+  ],
+  "excludes": ["*/td2-test-file-2"]
 }

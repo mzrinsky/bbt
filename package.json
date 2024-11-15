@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "jest && bats tests/"
+    "test": "jest && echo '' && bats tests/"
   },
   "dependencies": {
     "commander": "^12.0.0",
