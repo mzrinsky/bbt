@@ -1,0 +1,14 @@
+{
+  "restoreSrc": "./tests/output/backups/latest",
+  "srcSshOpts": [],
+  "restoreDest": "./tests/output/restore/",
+  "destSshOpts": [],
+  "restoreResources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3"
+  ],
+  "excludes": ["*/td2-test-file-2"]
+}

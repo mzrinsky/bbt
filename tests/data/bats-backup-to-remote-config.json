@@ -1,0 +1,25 @@
+{
+  "backupDest": "ssh://testuser@localhost:63333/tmp/tests/output/backups-to-remote/",
+  "destSshOpts": [
+    "-i", "./tests/data/ssh/testuser-ed25519",
+    "-o", "StrictHostKeyChecking=no"
+  ],
+  "archiveBaseName": "test-archive-basename",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "",
+  "archivePermissions": "644",
+  "archiveKeepDays": 30,
+  "backupSrc": "./tests/data/input/",
+  "srcSshOpts": [],
+  "resources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-dir-3",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3",
+    "test-file-5"
+  ],
+  "excludes": ["test-dir-2/td2-test-file-1", "test-dir-2/td2-test-file-3"]
+}

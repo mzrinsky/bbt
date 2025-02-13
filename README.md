@@ -1,5 +1,8 @@
 bbtcli - Better Backup Tool Command Line Interface
 
+# Warning
+This is currently a work in progress.
+
 # What is it?
 A tool to create and restore backup snapshots on *nix systems.
 
@@ -32,12 +35,93 @@ Backup and restore is possible from ssh => local, local => ssh, ssh => ssh, or l
 # Configuration Examples
 
 ```
+# backup-example.json
+{
+  "backupDest": "/tests/output/backups/",
+  "destSshOpts": [],
+  "archiveBaseName": "archive-basename",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "",
+  "archivePermissions": "644",
+  "archiveKeepDays": 30,
+  "backupSrc": "/tests/data/input/",
+  "srcSshOpts": [],
+  "resources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-dir-3",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3",
+    "test-file-5"
+  ],
+  "excludes": ["test-dir-2/td2-test-file-1", "test-dir-2/td2-test-file-3"]
+}
+```
+
+```
+# restore-example.json
+{
+  "restoreSrc": "/tests/output/backups/latest",
+  "srcSshOpts": [],
+  "restoreDest": "/tests/output/restore/",
+  "destSshOpts": [],
+  "restoreResources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3"
+  ],
+  "excludes": ["*/td2-test-file-2"]
+}
+```
+
+```
+# backup-local-to-ssh-example.json
+{
+  "backupDest": "ssh://user@backup-host/tests/output/backups/",
+  "destSshOpts": ['-i', "/path/to/.ssh/ssh-key"],
+  "archiveBaseName": "archive-basename",
+  "archiveCommand": "pigz --fast",
+  "archiveLinkLatest": true,
+  "archiveOwner": "",
+  "archivePermissions": "644",
+  "archiveKeepDays": 30,
+  "backupSrc": "/tests/data/input/",
+  "srcSshOpts": [],
+  "resources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-dir-3",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3",
+    "test-file-5"
+  ],
+  "excludes": ["test-dir-2/td2-test-file-1", "test-dir-2/td2-test-file-3"]
+}
+```
+
+```
+# restore-ssh-to-local-example.json
+{
+  "restoreSrc": "ssh://user@backup-host/tests/output/backups/latest",
+  "srcSshOpts": ['-i', "/path/to/.ssh/ssh-key"],
+  "restoreDest": "/tests/output/restore/",
+  "destSshOpts": [],
+  "restoreResources": [
+    "test-dir-1",
+    "test-dir-2",
+    "test-file-1",
+    "test-file-2",
+    "test-file-3"
+  ],
+  "excludes": ["*/td2-test-file-2"]
+}
 ```
 
 # Support BBT
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A74VYT1)
-
-# Screenshots
-
-![not yet](/../screenshot/screenshot.gif?raw=true "sceenshot")
