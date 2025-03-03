@@ -3,10 +3,11 @@
   "destSshOpts": [],
   "archiveBaseName": "test-archive-basename",
   "archiveCommand": "pigz --fast",
+  "archiveExtension": ".tar.gz",
   "archiveLinkLatest": true,
   "archiveOwner": "",
   "archivePermissions": "644",
-  "archiveKeepDays": 30,
+  "archiveKeepLast": 30,
   "backupSrc": "./tests/data/input/",
   "srcSshOpts": [],
   "resources": [

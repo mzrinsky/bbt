@@ -1,5 +1,10 @@
 #!/usr/bin/env bats
 
+setup() {
+  load '../node_modules/bats-support/load'
+  load '../node_modules/bats-assert/load'
+}
+
 setup_file() {
   if [ ! -d "tests/output/" ]; then
     mkdir -p "tests/output"
@@ -24,8 +29,6 @@ setup_file() {
   if [ "$(ls -A tests/output/restore/)" ]; then
     rm -r tests/output/restore/*
   fi
-
-	echo '# setup complete' >&3
 }
 
 main() {
@@ -55,29 +58,26 @@ main_run_restore() {
 @test "fail with no config file." {
 
 	run main
-	echo "# check exit status"
-	[ "${status}" -ne 0 ]
-	[ "${status}" -eq 1 ]
+  assert_failure
 
-	echo "# check for help message"
-	[[ "${output}" =~ "Usage: bbt-cli" ]]
-	[[ "${output}" =~ "Options:" ]]
-	[[ "${output}" =~ "Commands:" ]]
+  assert_output -p "Usage: bbt-cli"
+  assert_output -p "Options:"
+  assert_output -p "Commands:"
 }
 
 @test "Generate a bash backup script" {
 
 	run main_gen_backup
+	assert_success
 
-	[ "${status}" -eq 0 ]
   [ -f "./tests/output/test-backup-script" ]
 }
 
 @test "Generate a bash restore script" {
 
 	run main_gen_restore
+  assert_success
 
-	[ "${status}" -eq 0 ]
   [ -f "./tests/output/test-restore-script" ]
 }
 
@@ -87,39 +87,42 @@ main_run_restore() {
   DATESTR=`date -d now '+%F-*'`
 
   run main_run_backup
+  assert_success
 
-  [ "${status}" -eq 0 ]
   [ -f ./tests/output/backups/test-archive-basename-${DATESTR} ]
+
+  run find ./tests/output/backups/ -maxdepth 1 -name "test-archive-basename-*" -print -quit
+  assert_success
+  [ "${output}" != "" ]
+
   [ -f "./tests/output/backups/latest" ]
 
   run main_list_backup
-  [ "${status}" -eq 0 ]
-  [[ "${output}" =~ "test-dir-1/" ]]
-  [[ "${output}" =~ "test-dir-1/td1-test-file-1" ]]
-  [[ "${output}" =~ "test-dir-1/td1-test-file-2" ]]
-  [[ "${output}" =~ "test-dir-1/td1-test-file-3" ]]
-  [[ "${output}" =~ "test-dir-2/" ]]
-  [[ ! "${output}" =~ "test-dir-2/td2-test-file-1" ]]
-  [[ "${output}" =~ "test-dir-2/td2-test-file-2" ]]
-  [[ ! "${output}" =~ "test-dir-2/td2-test-file-3" ]]
-  [[ "${output}" =~ "test-dir-3/" ]]
-  [[ "${output}" =~ "test-dir-3/td3-test-file-1" ]]
-  [[ "${output}" =~ "test-dir-3/td3-test-file-2" ]]
-  [[ "${output}" =~ "test-dir-3/td3-test-file-3" ]]
-  [[ "${output}" =~ "test-file-1" ]]
-  [[ "${output}" =~ "test-file-2" ]]
-  [[ "${output}" =~ "test-file-3" ]]
-  [[ ! "${output}" =~ "test-file-4" ]]
-  [[ "${output}" =~ "test-file-5" ]]
+  assert_success
+  assert_output -p "test-dir-1/"
+  assert_output -p "test-dir-1/td1-test-file-1"
+  assert_output -p "test-dir-1/td1-test-file-2"
+  assert_output -p "test-dir-1/td1-test-file-3"
+  assert_output -p "test-dir-2/"
+  refute_output "test-dir-2/td2-test-file-1"
+  assert_output -p "test-dir-2/td2-test-file-2"
+  refute_output "test-dir-2/td2-test-file-3"
+  assert_output -p "test-dir-3/"
+  assert_output -p "test-dir-3/td3-test-file-1"
+  assert_output -p "test-dir-3/td3-test-file-2"
+  assert_output -p "test-dir-3/td3-test-file-3"
+  assert_output -p "test-file-1"
+  assert_output -p "test-file-2"
+  assert_output -p "test-file-3"
+  refute_output "test-file-4"
+  assert_output -p "test-file-5"
 }
 
 @test "Run test restore script" {
 
-  DATESTR=`date -d now '+%F-*'`
-
   run main_run_restore
 
-  [ "${status}" -eq 0 ]
+  assert_success
   [ -d "./tests/output/restore/test-dir-1" ]
   [ -f "./tests/output/restore/test-dir-1/td1-test-file-1" ]
   [ -f "./tests/output/restore/test-dir-1/td1-test-file-2" ]

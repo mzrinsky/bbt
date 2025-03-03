@@ -1,8 +1,11 @@
 {
   "restoreSrc": "./tests/output/backups/latest",
   "srcSshOpts": [],
-  "restoreDest": "./tests/output/restore/",
-  "destSshOpts": [],
+  "restoreDest": "ssh://testuser@localhost:63333/tmp/tests/output/restore-to-remote/",
+  "destSshOpts": [
+    "-i", "./tests/data/ssh/testuser-ed25519",
+    "-o", "StrictHostKeyChecking=no"
+  ],
   "restoreResources": [
     "test-dir-1",
     "test-dir-2",

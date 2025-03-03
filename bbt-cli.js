@@ -3,14 +3,11 @@
 const { program } = require('commander');
 const fs = require('node:fs');
 const fsp = require('node:fs').promises;
-const os = require('node:os');
 const easyConfig = require('./bbt-config-loader.js');
-const { validateHeaderName } = require('node:http');
 const Joi = require('joi');
 
 program
 .option('-c, --config <string>', 'Specify the config file to load', './config.json')
-
 
 program
 .command('backup')
@@ -23,7 +20,6 @@ program
 .description("Generate a bash backup script from a bbt config file.")
 .option('-o, --output <string>', 'Write output to file instead of STDOUT')
 .action(async (options) => {
-
   generateScript(options, '.bash-backup-template')
 })
 
@@ -35,20 +31,16 @@ program
   generateScript(options, '.bash-restore-template')
 })
 
-const optionSchema = Joi.object({
-  config: Joi.string().required(),
-  output: Joi.string(),
-})
-
 const backupConfigSchema = Joi.object({
   backupDest: Joi.string().required(),
   destSshOpts: Joi.array(),
   archiveBaseName: Joi.string().required(),
   archiveCommand: Joi.string(),
+  archiveExtension: Joi.string(),
   archiveLinkLatest: Joi.bool(),
-  archiveOwner: Joi.string(),
-  archivePermissions: Joi.string(),
-  archiveKeepDays: Joi.number(),
+  archiveOwner: Joi.string().allow(''),
+  archivePermissions: Joi.string().allow(''),
+  archiveKeepLast: Joi.number(),
   backupSrc: Joi.string().required(),
   srcSshOpts: Joi.array(),
   resources: Joi.array().required(),
@@ -73,10 +65,11 @@ const backupTemplateSchema = Joi.object({
   backup_dest_ssh_opts: Joi.string().required(),
   archive_command: Joi.string(),
   archive_base_name: Joi.string().required(),
+  archive_extension: Joi.string().required(),
   archive_link_latest: Joi.bool().required(),
   archive_owner: Joi.string().required(),
   archive_perms: Joi.string().required(),
-  archive_keep_days: Joi.number().required(),
+  archive_keep_last: Joi.number().required(),
   backup_resources: Joi.string().required(),
   backup_exclude_resources: Joi.string().required(),
 })
@@ -93,7 +86,8 @@ const restoreTemplateSchema = Joi.object({
 exports.restoreTemplateSchema = restoreTemplateSchema
 
 async function generateScript(options, templateName) {
-  let programOpts = program.opts();
+  let programOpts = program.opts()
+
   const appConfig = await loadConfig(programOpts.config)
 
   let templateOptions = getTemplateOptions( appConfig, options, templateName )
@@ -123,6 +117,13 @@ function getTemplateOptions(appConfig, cmdOptions, templateName) {
   let templateOptions = {};
 
   if (templateName == '.bash-restore-template') {
+
+    const {error, value} = restoreConfigSchema.validate(appConfig)
+    if (error) {
+      const configFile = program.opts().config
+      console.error(`The config file '${configFile}' failed validation.`, error)
+      process.exit(1)
+    }
 
     let restoreSrc = appConfig.restoreSrc
     let restoreSrcUrl;
@@ -188,7 +189,21 @@ function getTemplateOptions(appConfig, cmdOptions, templateName) {
       "restore_exclude_resources": excludeStr,
     }
 
+    const {terror, tvalue} = restoreTemplateSchema.validate(templateOptions)
+    if (terror) {
+      const configFile = program.opts().config
+      console.error(`The template options from '${configFile}' failed validation, this is probably a bug.`, terror)
+      process.exit(1)
+    }
+
   } else {
+
+    const {error, value} = backupConfigSchema.validate(appConfig)
+    if (error) {
+      const configFile = program.opts().config
+      console.error(`The config file '${configFile}' failed validation.`, error)
+      process.exit(1)
+    }
 
     let backupSrc = appConfig.backupSrc
     let backupSrcUrl;
@@ -239,21 +254,23 @@ function getTemplateOptions(appConfig, cmdOptions, templateName) {
       "backup_exclude_resources": excludeStr,
       "archive_base_name": archiveBaseNameStr,
       "archive_link_latest": appConfig.archiveLinkLatest ?? true,
-      "archive_owner": appConfig.archiveOwner || "",
+      "archive_owner": appConfig.archiveOwner,
       "archive_perms": appConfig.archivePermissions || "",
-      "archive_command": appConfig.archiveCommand || "pigz",
-      "archive_keep_days": appConfig.archiveKeepDays || 0,
+      "archive_command": appConfig.archiveCommand || "pigz --fast",
+      "archive_extension": appConfig.archiveExtension || ".tar.gz",
+      "archive_keep_last": appConfig.archiveKeepLast || 0,
+    }
+
+    const {terror, tvalue} = backupTemplateSchema.validate(templateOptions)
+    if (terror) {
+      const configFile = program.opts().config
+      console.error(`The template options from '${configFile}' failed validation, this is probably a bug.`, terror)
+      process.exit(1)
     }
   }
   return templateOptions;
 }
 exports.getTemplateOptions = getTemplateOptions
-
-function genSignature() {
-  const genDate = new Date()
-  let programOpts = program.opts();
-  return "Generated on " + genDate.toString() + " " + os.type() + " " + os.release() + " " + "from config file '" + programOpts.config + "'"
-}
 
 async function processTemplate(fileName, templateData) {
   let fileData = await fsp.readFile(fileName, "utf8")
