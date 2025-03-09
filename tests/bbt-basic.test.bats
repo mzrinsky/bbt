@@ -32,15 +32,15 @@ setup_file() {
 }
 
 main() {
-	./bbt-cli.js
+	./bbt.js
 }
 
 main_gen_backup() {
-	./bbt-cli.js -c tests/data/bats-backup-config.json bash-backup -o tests/output/test-backup-script
+	./bbt.js bash-backup -c tests/data/bats-backup-config.json -o tests/output/test-backup-script
 }
 
 main_gen_restore() {
-	./bbt-cli.js -c tests/data/bats-restore-config.json bash-restore -o tests/output/test-restore-script
+	./bbt.js bash-restore -c tests/data/bats-restore-config.json -o tests/output/test-restore-script
 }
 
 main_run_backup() {
@@ -48,7 +48,15 @@ main_run_backup() {
 }
 
 main_list_backup() {
-  tar --list -f ./tests/output/backups/latest
+  tar --list -zf ./tests/output/backups/latest
+}
+
+main_list_backup_snapshots() {
+  ls -la ./tests/output/backups/test-archive-basename-*.tar.gz
+}
+
+main_count_backup_snapshots() {
+  ls -la ./tests/output/backups/test-archive-basename-*.tar.gz | wc -l
 }
 
 main_run_restore() {
@@ -60,7 +68,7 @@ main_run_restore() {
 	run main
   assert_failure
 
-  assert_output -p "Usage: bbt-cli"
+  assert_output -p "Usage: bbt"
   assert_output -p "Options:"
   assert_output -p "Commands:"
 }
@@ -83,22 +91,13 @@ main_run_restore() {
 
 @test "Run test bash backup script" {
 
-  # make a string with the current date.. this could fail if it runs at the wrong second at midnight..
-  DATESTR=`date -d now '+%F-*'`
-
   run main_run_backup
   assert_success
-
-  [ -f ./tests/output/backups/test-archive-basename-${DATESTR} ]
-
-  run find ./tests/output/backups/ -maxdepth 1 -name "test-archive-basename-*" -print -quit
-  assert_success
-  [ "${output}" != "" ]
-
-  [ -f "./tests/output/backups/latest" ]
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
 
   run main_list_backup
   assert_success
+
   assert_output -p "test-dir-1/"
   assert_output -p "test-dir-1/td1-test-file-1"
   assert_output -p "test-dir-1/td1-test-file-2"
@@ -116,6 +115,48 @@ main_run_restore() {
   assert_output -p "test-file-3"
   refute_output "test-file-4"
   assert_output -p "test-file-5"
+
+  # verify the permissions
+  run main_list_backup_snapshots
+  assert_success
+  assert_output -p "test-archive-basename"
+  assert_output -p "-rw-rw----"
+
+  run main_count_backup_snapshots
+  assert_success
+  assert_output -p "1"
+
+  [ -f "./tests/output/backups/latest" ]
+
+
+  # run the backup more times, to test archiveKeepLast functionality
+  run main_run_backup
+  assert_success
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
+
+  run main_run_backup
+  assert_success
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
+
+  # verify there are 3 snapshots
+  run main_count_backup_snapshots
+  assert_success
+  assert_output -p "3"
+
+  # and that the latest link is still there..
+  [ -f "./tests/output/backups/latest" ]
+
+  # run a 4th time
+  run main_run_backup
+  assert_success
+
+  # verify there are still only 3 snapshots
+  run main_count_backup_snapshots
+  assert_success
+  assert_output -p "3"
+
+  # and that the latest link is still there..
+  [ -f "./tests/output/backups/latest" ]
 }
 
 @test "Run test restore script" {

@@ -139,7 +139,7 @@ function try_restore() {
       pre_exec
       ssh ${restore_src_ssh_opts}${restore_src_uri} "cat ${restore_src_path}" \
       | ssh ${restore_dest_ssh_opts}${restore_dest_uri} \
-      " tar -C ${restore_dest_path} --overwrite -xzvf - ${exclude_resource_str}${restore_resource_str}"
+      "{{!extract_command}} | tar -C ${restore_dest_path} --overwrite -xvf - ${exclude_resource_str}${restore_resource_str}"
       post_exec
 
     # else the restore dest is local (remote src => local dest)
@@ -148,7 +148,7 @@ function try_restore() {
       pre_exec
       # restore from remote src, to local dest
       ssh ${restore_src_ssh_opts}${restore_src_uri} "cat ${restore_src_path}" \
-      | tar -C ${restore_dest} --overwrite -xzvf - ${exclude_resource_str}${restore_resource_str}
+      | {{!extract_command}} | tar -C ${restore_dest} --overwrite -xvf - ${exclude_resource_str}${restore_resource_str}
       post_exec
 
     fi
@@ -174,14 +174,14 @@ function try_restore() {
       pre_exec
       cat ${restore_src_path} \
       | ssh ${restore_dest_ssh_opts}${restore_dest_uri} \
-      "tar -C ${restore_dest_path} --overwrite -xzvf - ${exclude_resource_str}${restore_resource_str}"
+      "{{!extract_command}} | tar -C ${restore_dest_path} --overwrite -xvf - ${exclude_resource_str}${restore_resource_str}"
       post_exec
 
     # else the restore dest is local.. (local src => local dest)
     else
       # restore from local src, to local dest
       pre_exec
-      tar -C ${restore_dest} --overwrite -xzvf ${restore_src} ${exclude_resource_str}${restore_resource_str}
+      cat ${restore_src} | {{!extract_command}} | tar -C ${restore_dest} --overwrite -xvf - ${exclude_resource_str}${restore_resource_str}
       post_exec
     fi
 

@@ -152,7 +152,7 @@ function clean_older_than_remote() {
     # we then awk -F '\0' to print only the filename
     # and finally pipe that to xargs to reomove it
     # the xargs invocation here is faster, but might not work everywhere..  xargs -I {} rm -- {} should work but be slower.. xargs -d '\n' -r rm --
-    ssh ${remote_str} "find ${remote_path} -name ${remote_matchname} -printf '%T+\0%p\n' | sort -r | tail -n +${tail_num} | awk -F '\0' '{print \$2}' | xargs -I {} rm -- {}"
+    ssh ${remote_str} find ${remote_path} -name ${remote_matchname} -printf '%T+\0%p\n' | sort -r | tail -n +${tail_num} | awk -F '\0' '{print $2}' | xargs -I {} rm -- {}
     post_exec
   fi
 }
@@ -176,7 +176,7 @@ function chown_local() {
       echo "Changing ownership to ${ch_archive_owner} on ${local_file}"
     fi
     pre_exec
-    chown ${ch_archive_owner} ${remote_file}
+    chown ${ch_archive_owner} ${local_file}
     post_exec
   fi
 }
@@ -244,7 +244,7 @@ function clean_older_than_local() {
     local tail_num=$(( ${archive_keep_last} + 1 ))
 
     pre_exec
-    find ${local_path} -name ${match_name} -printf '%T+\0%p\n' | sort -r | tail -n +${tail_num} | awk -F '\0' '{print $2}' | xargs -d '\n' -r rm --
+    find ${local_path} -name ${match_name} -printf '%T+\0%p\n' | sort -r | tail -n +${tail_num} | awk -F '\0' '{print $2}' | xargs -I {} rm -- {}
     post_exec
     cd $original_dir
   fi

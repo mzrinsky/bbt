@@ -35,7 +35,7 @@ setup_file() {
   fi
 
   if [ "$(ls -A tests/data/ssh/)" ]; then
-    rm -r tests/data/ssh/*
+    rm -rf tests/data/ssh/*
   fi
 
   if [ ! -f "tests/data/ssh/testuser-ed25519" ]; then
@@ -60,11 +60,12 @@ setup_file() {
 }
 
 teardown_file() {
+  echo "stopping test sshd server.."
   docker stop bbt-test-sshd
 }
 
 main() {
-	./bbt-cli.js
+	./bbt.js
 }
 
 main_run_backup_remote() {
@@ -81,6 +82,14 @@ main_run_backup_from_remote() {
 
 main_list_backup_remote() {
   ssh -i tests/data/ssh/testuser-ed25519 -o "StrictHostKeyChecking=no" -p 63333 testuser@localhost "tar --list -zf /tmp/tests/output/backups/latest"
+}
+
+main_list_backup_snapshots_remote() {
+  ssh -i tests/data/ssh/testuser-ed25519 -o "StrictHostKeyChecking=no" -p 63333 testuser@localhost "ls -la /tmp/tests/output/backups/test-archive-basename-*.tar.gz"
+}
+
+main_count_backup_snapshots_remote() {
+  ssh -i tests/data/ssh/testuser-ed25519 -o "StrictHostKeyChecking=no" -p 63333 testuser@localhost "ls -la /tmp/tests/output/backups/test-archive-basename-*.tar.gz | wc -l"
 }
 
 main_list_backup_to_remote() {
@@ -122,8 +131,10 @@ run_start_ssh_server() {
   local RUNUSERID=$(id -u ${USER})
   local RUNUSERGRPID=$(id -g ${USER})
   docker run -d --rm -p 63333:22 \
-    -v $(pwd)/tests/data/ssh/testuser-ed25519.pub:/etc/authorized_keys/testuser:ro \
+    -v $(pwd)/tests/data/ssh/testuser-ed25519.pub:/etc/authorized_keys/testuser:rw \
+    -v $(pwd)/tests/data/ssh/testuser-ed25519.pub:/root/.ssh/authorized_keys:rw \
     -e SSH_USERS="testuser:${RUNUSERID}:${RUNUSERGRPID}" \
+    -e SSH_ENABLE_ROOT=true \
     --name bbt-test-sshd \
     mzrinsky/sshd-bbt:latest
   # give the server a moment to start..
@@ -143,17 +154,15 @@ run_init_remote_test_data() {
 
 @test "Generate bash backup scripts for ssh testing" {
 
-	run ./bbt-cli.js -c tests/data/bats-backup-remote-config.json bash-backup -o tests/output/test-backup-remote-script
+	run ./bbt.js bash-backup -c tests/data/bats-backup-remote-config.json -o tests/output/test-backup-remote-script
   assert_success
   [ -f "./tests/output/test-backup-remote-script" ]
 
-
-  run ./bbt-cli.js -c tests/data/bats-backup-from-remote-config.json bash-backup -o tests/output/test-backup-from-remote-script
+  run ./bbt.js bash-backup -c tests/data/bats-backup-from-remote-config.json -o tests/output/test-backup-from-remote-script
   assert_success
   [ -f "./tests/output/test-backup-from-remote-script" ]
 
-
-  run ./bbt-cli.js -c tests/data/bats-backup-to-remote-config.json bash-backup -o tests/output/test-backup-to-remote-script
+  run ./bbt.js bash-backup -c tests/data/bats-backup-to-remote-config.json -o tests/output/test-backup-to-remote-script
   assert_success
   [ -f "./tests/output/test-backup-to-remote-script" ]
 }
@@ -161,16 +170,15 @@ run_init_remote_test_data() {
 
 @test "Generate bash restore scripts for ssh testing" {
 
-  run ./bbt-cli.js -c tests/data/bats-restore-remote-config.json bash-restore -o tests/output/test-restore-remote-script
+  run ./bbt.js bash-restore -c tests/data/bats-restore-remote-config.json -o tests/output/test-restore-remote-script
   assert_success
   [ -f "./tests/output/test-restore-remote-script" ]
 
-  run ./bbt-cli.js -c tests/data/bats-restore-from-remote-config.json bash-restore -o tests/output/test-restore-from-remote-script
+  run ./bbt.js bash-restore -c tests/data/bats-restore-from-remote-config.json -o tests/output/test-restore-from-remote-script
   assert_success
   [ -f "./tests/output/test-restore-from-remote-script" ]
 
-
-  run ./bbt-cli.js -c tests/data/bats-restore-to-remote-config.json bash-restore -o tests/output/test-restore-to-remote-script
+  run ./bbt.js bash-restore -c tests/data/bats-restore-to-remote-config.json -o tests/output/test-restore-to-remote-script
   assert_success
   [ -f "./tests/output/test-restore-to-remote-script" ]
 }
@@ -180,6 +188,7 @@ run_init_remote_test_data() {
 
   run main_run_backup_remote
   assert_success
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
 
   run main_list_backup_remote
   assert_success
@@ -202,6 +211,34 @@ run_init_remote_test_data() {
   refute_output "test-file-4"
   assert_output -p "test-file-5"
 
+  # verify the owner and group
+  run main_list_backup_snapshots_remote
+  assert_success
+  assert_output -p "test-archive-basename"
+  assert_output -p "testuser testuser"
+  assert_output -p "-rw-rw----"
+
+  # run the script multiple times, to generate multiple snapshots
+  run main_run_backup_remote
+  assert_success
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
+
+  run main_run_backup_remote
+  assert_success
+  sleep 1 # delay so the timestamps on the snapshots are at least 1 second apart..
+
+  # verify the number of snapshots to validate the archiveKeepLast functionality
+  run main_count_backup_snapshots_remote
+  assert_success
+  assert_output -p "3"
+
+  run main_run_backup_remote
+  assert_success
+
+  # verify the number of snapshots to validate the archiveKeepLast functionality
+  run main_count_backup_snapshots_remote
+  assert_success
+  assert_output -p "3"
 }
 
 

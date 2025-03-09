@@ -1,5 +1,5 @@
 {
-  "backupDest": "ssh://testuser@localhost:63333/tmp/tests/output/backups/",
+  "backupDest": "ssh://root@localhost:63333/tmp/tests/output/backups/",
   "destSshOpts": [
     "-i", "./tests/data/ssh/testuser-ed25519",
     "-o", "StrictHostKeyChecking=no"
@@ -7,9 +7,9 @@
   "archiveBaseName": "test-archive-basename",
   "archiveCommand": "pigz --fast",
   "archiveLinkLatest": true,
-  "archiveOwner": "",
-  "archivePermissions": "644",
-  "archiveKeepLast": 30,
+  "archiveOwner": "testuser:testuser",
+  "archivePermissions": "660",
+  "archiveKeepLast": 3,
   "backupSrc": "ssh://testuser@localhost:63333/tmp/tests/data/input/",
   "srcSshOpts": [
     "-i", "./tests/data/ssh/testuser-ed25519",

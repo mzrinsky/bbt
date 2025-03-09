@@ -1,4 +1,4 @@
-const configLoader = require('../bbt-config-loader');
+const configLoader = require('../lib/bbt-config-loader');
 
 test('Missing config throws ENOENT exception', async () => {
   expect(configLoader.loadConfigFile('missing-file.json'))

@@ -9,7 +9,7 @@
   "archiveLinkLatest": true,
   "archiveOwner": "",
   "archivePermissions": "644",
-  "archiveKeepLast": 30,
+  "archiveKeepLast": 3,
   "backupSrc": "./tests/data/input/",
   "srcSshOpts": [],
   "resources": [

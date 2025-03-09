@@ -9,7 +9,7 @@
   "archiveLinkLatest": true,
   "archiveOwner": "",
   "archivePermissions": "644",
-  "archiveKeepLast": 30,
+  "archiveKeepLast": 3,
   "backupSrc": "ssh://testuser@localhost:63333/tmp/tests/data/input/",
   "srcSshOpts": [
     "-i", "./tests/data/ssh/testuser-ed25519",
